@@ -117,6 +117,9 @@ function Layout() {
       console.log(response.data);
     } catch (error) {
       console.error(error);
+
+
+      
     }
     setNotes([...notes.slice(0, index), ...notes.slice(index + 1)]);
     setCurrentNote(0);
