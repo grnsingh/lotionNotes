@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key
 import boto3
 
 dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table("lotion-30139470")
+table = dynamodb.Table("lotion-30142604")
 
 def lambda_handler (event, context):
     email = event["queryStringParameters"]["email"]

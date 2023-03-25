@@ -7,12 +7,7 @@ terraform {
   }
 }
 
-# specify the provider region
-provider "aws" {
-  region     = "ca-central-1"
-  access_key = "AKIASGQXIFCOL4RHCPHW"
-  secret_key = "laF8dbxS0zaICXKzxHgZCdE/Z0ZA3fcYoGcbTzb8"
-}
+
 
 # the locals block is used to declare constants that 
 # you can use throughout your code

@@ -15,8 +15,7 @@ function Layout() {
   const [notes, setNotes] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [currentNote, setCurrentNote] = useState(-1);
-/////////////////////////////////////////////////////////////////////////////////////////////
-  // NEED TO USE GLOBAL OR SOMETHING ELSE...
+
 
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem(userStorageKey);
@@ -33,7 +32,7 @@ function Layout() {
 
  
   function call_back_response(response) {
-    console.log("bla bla bla"+response.credential);
+    console.log(response.credential);
     var user_obj = jwt_decode(response.credential);
     console.log(user_obj);
     setUser(user_obj);
@@ -69,7 +68,7 @@ function Layout() {
       }, []);
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+
   useEffect(() => {
     const height = mainContainerRef.current.offsetHeight;
     mainContainerRef.current.style.maxHeight = `${height}px`;
@@ -138,7 +137,7 @@ function Layout() {
     }
   };
 
-/////////////LINE 123-133,  155-158 ONWARDS I DID THE CHANGES//////////////////////////////////////
+
 
   return (
     <div id="container">
@@ -190,10 +189,6 @@ function Layout() {
             ? <div id="sign_in_div"></div>
             : <div></div>
           }
-     
-          
-          
-
           <Outlet context={[notes, saveNote, deleteNote]} />
         </div>
       </div>
