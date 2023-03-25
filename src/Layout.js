@@ -3,11 +3,10 @@ import { Outlet, useNavigate, Link } from "react-router-dom";
 import NoteList from "./NoteList";
 import { v4 as uuidv4 } from "uuid";
 import { currentDate } from "./utils";
-import Login from "./Login";
-
-
+import jwt_decode from "jwt-decode";
+// import trying_func from "./trying_func";
 const localStorageKey = "lotion-v1";
-
+const userStorageKey = "lotion-user";
 
 function Layout() {
   const navigate = useNavigate();
@@ -16,8 +15,61 @@ function Layout() {
   const [notes, setNotes] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [currentNote, setCurrentNote] = useState(-1);
-  const [profile, setProfile] = useState(null);
+/////////////////////////////////////////////////////////////////////////////////////////////
+  // NEED TO USE GLOBAL OR SOMETHING ELSE...
 
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem(userStorageKey);
+    if (storedUser) {
+      try {
+        return JSON.parse(storedUser);
+      } catch {
+        return {};
+      }
+    } else {
+      return {};
+    }
+  });
+
+ 
+  function call_back_response(response) {
+    console.log("bla bla bla"+response.credential);
+    var user_obj = jwt_decode(response.credential);
+    console.log(user_obj);
+    setUser(user_obj);
+    localStorage.setItem(userStorageKey, JSON.stringify(user_obj));
+    document.getElementById("sign_in_div").hidden = true;
+    trying_func(user_obj.email,...notes.slice(0,1));
+  }
+
+  function sign_out_fun(event) {
+    setUser({});
+    localStorage.removeItem(userStorageKey);
+    document.getElementById("sign_in_div").hidden = false;
+  }
+
+
+  
+
+  function trying_func(note_id,a) {
+    console.log("trying_func: " + note_id);
+    console.log("trying_func: hababbabxdebdyedbedw: "+a);
+  }
+  useEffect(() => {
+    if(Object.keys(user).length ===0){
+    
+    window.google.accounts.id.initialize
+    ({
+      client_id: "540316072672-bco64messekhdqonekeuiclmemg3862j.apps.googleusercontent.com",
+      callback: call_back_response
+    })
+      window.google.accounts.id.renderButton(document.getElementById("sign_in_div"), 
+      { theme: "outline", size: "large", text: "sign_in" });}
+    
+      }, []);
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
   useEffect(() => {
     const height = mainContainerRef.current.offsetHeight;
     mainContainerRef.current.style.maxHeight = `${height}px`;
@@ -46,49 +98,9 @@ function Layout() {
     navigate(`/notes/${currentNote + 1}/edit`);
   }, [notes]);
 
+  
 
-  useEffect(()=> {
-    async function getNotes() {
-    if (profile){
-      const promise = await fetch(`https://z5ursllpspinz6kt72kk3rgqba0payxg.lambda-url.ca-central-1.on.aws/?email=${profile.email}`
-      );
-      if (promise.status === 200){
-        const data = await promise.json();
-        setNotes(data);}
-    }
-  }
-  getNotes();
-}, [profile]);
-  // const saveNote = async (note, index) => {
-  //   if (!profile) {
-  //     console.error("User not logged in");
-  //     return;
-  //   }
-  //   const email = profile.email;
-  //   note.body = note.body.replaceAll("<p><br></p>", "");
-  //   setNotes([
-  //     ...notes.slice(0, index),
-  //     { ...note },
-  //     ...notes.slice(index + 1),
-  //   ]);
-  //   setCurrentNote(index);
-  //   setEditMode(false);
-
-  //   const data = {
-  //     email: email,
-  //     access_token: profile?.access_token,
-  //     note: {
-  //       noteId: note.id,
-  //       title: note.title,
-  //       content: note.body,
-  //       timestamp: note.when,
-  //     },
-  //   };
-
-  const saveNote = async (note, index) => {
-    console.log("clicked")
-    console.log(note)
-    
+  const saveNote = (note, index) => {
     note.body = note.body.replaceAll("<p><br></p>", "");
     setNotes([
       ...notes.slice(0, index),
@@ -96,39 +108,20 @@ function Layout() {
       ...notes.slice(index + 1),
     ]);
     setCurrentNote(index);
-    const res = await fetch(
-      "https://j3lb5b6xtclchnye36lzanpxfq0tvfsn.lambda-url.ca-central-1.on.aws/",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({...note, email: profile.email}),
-      }
-    );
     setEditMode(false);
-  
-};
 
+    console.log(note);
+    
+  };
 
-  const deleteNote = async (index) => {
-    try {
-      const response = await fetch(`https://lwvym45icqngn3vjpjmvtmotyy0ahvkp.lambda-url.ca-central-1.on.aws/?email=${profile.email}&id=${index}`);
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-
-
-
-    }
+  const deleteNote = (index) => {
     setNotes([...notes.slice(0, index), ...notes.slice(index + 1)]);
     setCurrentNote(0);
-
-    
     setEditMode(false);
   };
 
   const addNote = () => {
+    if(Object.keys(user).length !=0){
     setNotes([
       {
         id: uuidv4(),
@@ -139,8 +132,13 @@ function Layout() {
       ...notes,
     ]);
     setEditMode(true);
-    setCurrentNote(0);
+    setCurrentNote(0);}
+    else{
+      alert("Please Sign In to add notes");
+    }
   };
+
+/////////////LINE 123-133,  155-158 ONWARDS I DID THE CHANGES//////////////////////////////////////
 
   return (
     <div id="container">
@@ -153,10 +151,23 @@ function Layout() {
         <div id="app-header">
           <h1>
             <Link to="/notes">Lotion</Link>
+            
           </h1>
+          <div allign="right">
+            {
+            Object.keys(user).length !=0 
+            &&
+            <button onClick={(e) => sign_out_fun(e)}>Sign Out</button>
+          }
+          
+          {user &&
+            <div>
+              <h3>{user.email}</h3>
+              </div>
+          }</div>
           <h6 id="app-moto">Like Notion, but worse.</h6>
+
         </div>
-        <Login profile={profile} setProfile={setProfile} />
         <aside>&nbsp;</aside>
       </header>
       <div id="main-container" ref={mainContainerRef}>
@@ -174,6 +185,15 @@ function Layout() {
           </div>
         </aside>
         <div id="write-box">
+
+          {notes.length === 0 || Object.keys(user).length !=0
+            ? <div id="sign_in_div"></div>
+            : <div></div>
+          }
+     
+          
+          
+
           <Outlet context={[notes, saveNote, deleteNote]} />
         </div>
       </div>
