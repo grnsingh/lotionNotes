@@ -119,10 +119,12 @@ function Layout() {
       console.error(error);
 
 
-      
+
     }
     setNotes([...notes.slice(0, index), ...notes.slice(index + 1)]);
     setCurrentNote(0);
+
+    
     setEditMode(false);
   };
 
